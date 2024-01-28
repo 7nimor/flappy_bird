@@ -1,6 +1,7 @@
 import sys
 import pygame
 import random
+import time
 
 pygame.init()
 # Variable
@@ -24,8 +25,13 @@ Pipe_IMG = pygame.transform.scale2x(pygame.image.load("img/pipe_red.png"))
 Bird_mid_IMG = pygame.transform.scale2x(pygame.image.load("img/red_bird_mid_flap.png"))
 Bird_up_IMG = pygame.transform.scale2x(pygame.image.load("img/red_bird_up_flap.png"))
 Bird_down_IMG = pygame.transform.scale2x(pygame.image.load("img/red_bird_down_flap.png"))
+Game_over_IMG = pygame.transform.scale2x(pygame.image.load("img/message.png"))
 
+Game_over_IMG_rect = Game_over_IMG.get_rect(center=(250, 400))
 game_font = pygame.font.Font('font/Flappy.TTF', 30)
+
+game_over_sound = pygame.mixer.Sound('sound/smb_mariodie.wav')
+win_sound = pygame.mixer.Sound('sound/smb_stomp.wav')
 
 bird_list = [Bird_mid_IMG, Bird_up_IMG, Bird_down_IMG]
 
@@ -51,9 +57,13 @@ def check_collision(list_pipe):
     global active_score
     for pipe in list_pipe:
         if bird_rect.colliderect(pipe):
+            game_over_sound.play()
+            time.sleep(1.3)
             active_score = True
             return False
         if bird_rect.top <= -50 or bird_rect.bottom >= 900:
+            game_over_sound.play()
+            time.sleep(1.3)
             active_score = True
             return False
     return True
@@ -75,8 +85,8 @@ def get_bird_animation():
 def display_score(state):
     test1 = game_font.render(str(score), True, (255, 255, 255, 0))
     test1_rect = test1.get_rect(center=(250, 80))
-    test2 = game_font.render(f'High Score:{high_score}', False, (255, 255, 255))
-    test2_rect = test1.get_rect(center=(170, 600))
+    test2 = game_font.render(f'High Score:{high_score}', False, (0, 0, 0))
+    test2_rect = test1.get_rect(center=(170, 740))
     if state == 'active':
         WIN.blit(test1, test1_rect)
     else:
@@ -89,6 +99,7 @@ def update_score():
     if pipe_list:
         for pipe in pipe_list:
             if 95 < pipe.centerx < 105 and active_score:
+                win_sound.play()
                 score += 1
                 active_score = False
             if pipe.centerx < 0:
@@ -142,6 +153,7 @@ while True:
         update_score()
         display_score('active')
     else:
+        WIN.blit(Game_over_IMG, Game_over_IMG_rect)
         display_score('game_over')
 
     bird_movement += gravity
