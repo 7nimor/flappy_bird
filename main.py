@@ -2,6 +2,7 @@ import sys
 import pygame
 import random
 import time
+import asyncio
 
 pygame.init()
 # Variable
@@ -111,56 +112,60 @@ def update_score():
         high_score = score
     return high_score
 
+async def main():
+    global game_state,pipe_list,bird_rect,score,bird_index,floor_x,Bird_IMG,bird_movement
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird_movement = 0
+                    bird_movement -= 8
+                if event.key == pygame.K_r and game_state == False:
+                    game_state = True
+                    pipe_list.clear()
+                    bird_rect.center = (100, 400)
+                    bird_movement = 0
+                    score = 0
 
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                bird_movement = 0
-                bird_movement -= 8
-            if event.key == pygame.K_r and game_state == False:
-                game_state = True
-                pipe_list.clear()
-                bird_rect.center = (100, 400)
-                bird_movement = 0
-                score = 0
+            if event.type == crete_pipe:
+                pipe_list.extend(generate_pipe_rect())
+            if event.type == create_bird_flap:
+                if bird_index < 2:
+                    bird_index += 1
+                else:
+                    bird_index = 0
+                Bird_IMG, bird_rect = get_bird_animation()
+        WIN.blit(BG, (0, 0))
+        WIN.blit(Floor_IMG, (floor_x, 650))
+        WIN.blit(Floor_IMG, (floor_x + 670, 650))
 
-        if event.type == crete_pipe:
-            pipe_list.extend(generate_pipe_rect())
-        if event.type == create_bird_flap:
-            if bird_index < 2:
-                bird_index += 1
-            else:
-                bird_index = 0
-            Bird_IMG, bird_rect = get_bird_animation()
-    WIN.blit(BG, (0, 0))
-    WIN.blit(Floor_IMG, (floor_x, 650))
-    WIN.blit(Floor_IMG, (floor_x + 670, 650))
+        clock.tick(90)
+        if game_state:
+            WIN.blit(Bird_IMG, bird_rect)
+            game_state = check_collision(pipe_list)
+            pipe_list = move_pipe_rect(pipe_list)
 
-    clock.tick(90)
-    if game_state:
-        WIN.blit(Bird_IMG, bird_rect)
-        game_state = check_collision(pipe_list)
-        pipe_list = move_pipe_rect(pipe_list)
+            for pipe in pipe_list:
+                if pipe.bottom >= 800:
+                    WIN.blit(Pipe_IMG, pipe)
+                else:
+                    revers_img_pipe = pygame.transform.flip(Pipe_IMG, False, True)
+                    WIN.blit(revers_img_pipe, pipe)
+            update_score()
+            display_score('active')
+        else:
+            WIN.blit(Game_over_IMG, Game_over_IMG_rect)
+            display_score('game_over')
 
-        for pipe in pipe_list:
-            if pipe.bottom >= 800:
-                WIN.blit(Pipe_IMG, pipe)
-            else:
-                revers_img_pipe = pygame.transform.flip(Pipe_IMG, False, True)
-                WIN.blit(revers_img_pipe, pipe)
-        update_score()
-        display_score('active')
-    else:
-        WIN.blit(Game_over_IMG, Game_over_IMG_rect)
-        display_score('game_over')
+        bird_movement += gravity
+        bird_rect.centery += bird_movement
+        floor_x -= 1
+        if floor_x <= -670:
+            floor_x = 0
+        pygame.display.update()
+        await asyncio.sleep(0)
 
-    bird_movement += gravity
-    bird_rect.centery += bird_movement
-    floor_x -= 1
-    if floor_x <= -670:
-        floor_x = 0
-    pygame.display.update()
+asyncio.run(main())
