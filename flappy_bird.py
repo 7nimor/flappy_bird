@@ -5,7 +5,8 @@ import time
 
 pygame.init()
 # Variable
-WIDTH, HEIGHT = 500, 800
+infoObject = pygame.display.Info()
+WIDTH, HEIGHT = (infoObject.current_w/2.1), infoObject.current_h
 floor_x = 0
 gravity = 0.25
 bird_movement = 0
@@ -16,10 +17,11 @@ bird_index = 0
 score = 0
 high_score = 0
 active_score = True
+
 # GAME NAME
 pygame.display.set_caption("Space Dodge")
 # IMG
-BG = pygame.transform.scale(pygame.image.load("img/bg_night.png"), (WIDTH, HEIGHT))
+BG = pygame.transform.scale(pygame.image.load("img/bg_night.png"), (WIDTH,  HEIGHT))
 Floor_IMG = pygame.transform.scale2x(pygame.image.load("img/floor.png"))
 Pipe_IMG = pygame.transform.scale2x(pygame.image.load("img/pipe_red.png"))
 Bird_mid_IMG = pygame.transform.scale2x(pygame.image.load("img/red_bird_mid_flap.png"))
